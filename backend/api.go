@@ -24,7 +24,7 @@ type Customer struct {
 	UserID          uuid.UUID `json:"user_id"`
 	CustomerName    string    `json:"customer_name"`
 	CustomerAddress string    `json:"customer_address"`
-	CustomerPhone   int       `json:"customer_phone"`
+	CustomerPhone   string    `json:"customer_phone"`
 }
 
 type Market struct {
@@ -32,16 +32,17 @@ type Market struct {
 	UserID        uuid.UUID `json:"user_id"`
 	MarketName    string    `json:"market_name"`
 	MarketAddress string    `json:"market_address"`
-	MarketPhone   int       `json:"market_phone"`
+	MarketPhone   string    `json:"market_phone"`
 }
 
-type Products struct {
-	ProductID   uuid.UUID `json:"product_id"`
-	MarketID    uuid.UUID `json:"market_id"`
-	CategoryID  string    `json:"category_id"`
-	ProductName string    `json:"product_name"`
-	Keyword     string    `json:"keyword"`
-	Description string    `json:"description"`
+type Product struct {
+	ProductID    uuid.UUID `json:"product_id"`
+	MarketID     uuid.UUID `json:"market_id"`
+	CategoryID   uuid.UUID `json:"category_id"`
+	ProductName  string    `json:"product_name"`
+	ProductImage []byte    `json:"product_image"`
+	Keyword      string    `json:"keyword"`
+	Description  string    `json:"description"`
 }
 
 type Cart struct {
@@ -54,7 +55,7 @@ type Order struct {
 	CustomerID uuid.UUID `json:"customer_id"`
 	CartID     uuid.UUID `json:"cart_id"`
 	Status     string    `json:"status"`
-	DateOrder  time.Time `json:"date_order"`
+	DateOrder  time.Time `json:"date_order"` // Could be time.Time depending on your needs
 	TotalPrice float64   `json:"total_price"`
 }
 
@@ -513,26 +514,102 @@ func deleteMarket(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, 200, market)
 }
 
+func approveLoginHelper(field string, w http.ResponseWriter) string {
+	// İlk önce username ile sorgulama yapıyoruz
+	sql := `SELECT "user_id", "email", "password", "username", "status"
+			FROM "User" WHERE "username" = $1`
+	var user User
+	err := db.QueryRow(context.Background(), sql, field).Scan(&user.UserID, &user.Email, &user.Password, &user.Username, &user.Status)
+	if err == nil {
+		// Eğer username ile sonuç bulduysak, "username" döndür
+		return "username"
+	}
+
+	// Eğer username ile sonuç bulamadıysak, email ile sorgulama yapıyoruz
+	sql = `SELECT "user_id", "email", "password", "username", "status"
+			FROM "User" WHERE "email" = $1`
+	err = db.QueryRow(context.Background(), sql, field).Scan(&user.UserID, &user.Email, &user.Password, &user.Username, &user.Status)
+	if err == nil {
+		// Eğer email ile sonuç bulduysak, "email" döndür
+		return "email"
+	}
+
+	// Eğer her iki sorgu da başarısız olduysa, hata döndürüyoruz
+	respondWithError(w, 403, "This field is invalid !!")
+	return ""
+}
+
 func approveLogin(w http.ResponseWriter, r *http.Request) {
 	var user User
-	err := json.NewDecoder(r.Body).Decode(&user)
+	var sql string
+	var updateSQL string
+	var jsonData map[string]interface{}
+	err := json.NewDecoder(r.Body).Decode(&jsonData)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	sql := `SELECT "user_id", "email", "password", "username", "status"
-		FROM "User" WHERE username = $1 AND password = $2`
-	err = db.QueryRow(context.Background(), sql, user.Username, user.Password).Scan(
-		&user.UserID, &user.Email, &user.Password, &user.Username, &user.Status)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	field, ok := jsonData["username_or_email_field"].(string)
+	if !ok {
+		http.Error(w, "Please enter an username or email !!", http.StatusBadRequest)
 		return
 	}
+	password, ok := jsonData["password"].(string)
+	if !ok || password == "" {
+		http.Error(w, "Password is required", http.StatusBadRequest)
+		return
+	}
+	username_or_email := approveLoginHelper(field, w)
+	switch username_or_email {
+	case "username":
+		// Eğer field 'username' ise, username ile sorgulama yapıyoruz
+		sql = `SELECT "user_id", "email", "password", "username", "status" 
+			FROM "User" WHERE username = $1 AND password = $2`
+		err = db.QueryRow(context.Background(), sql, field, password).Scan(
+			&user.UserID, &user.Email, &user.Password, &user.Username, &user.Status)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	case "email":
+		// Eğer field 'email' ise, email ile sorgulama yapıyoruz
+		sql = `SELECT "user_id", "email", "password", "username", "status" 
+			FROM "User" WHERE email = $1`
+		rows, err := db.Query(context.Background(), sql, field)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+
+		// Şifreyi kontrol et
+		var foundUser bool
+		for rows.Next() {
+			var userInDb User
+			if err := rows.Scan(&userInDb.UserID, &userInDb.Email, &userInDb.Password, &userInDb.Username, &userInDb.Status); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			// Şifreyi kontrol et
+			if userInDb.Password == password {
+				user = userInDb
+				foundUser = true
+				break
+			}
+		}
+
+		if !foundUser {
+			http.Error(w, "Invalid password", http.StatusUnauthorized)
+			return
+		}
+	}
+
 	if user.Status {
 		respondWithError(w, 403, "This user is already logged in !!")
 		return
 	}
-	updateSQL := `UPDATE "User" SET "status" = true WHERE username = $1`
+	updateSQL = `UPDATE "User" SET "status" = true WHERE username = $1`
 	_, err = db.Exec(context.Background(), updateSQL, user.Username)
 	if err != nil {
 		http.Error(w, "Error updating user status", http.StatusInternalServerError)
@@ -571,4 +648,28 @@ func logoutUser(w http.ResponseWriter, r *http.Request) {
 	}
 	user.Status = false
 	respondWithJSON(w, 200, user)
+}
+
+func createProduct(w http.ResponseWriter, r *http.Request) {
+	var product Product
+	err := json.NewDecoder(r.Body).Decode(&product)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	sql := `INSERT INTO "Products" ("product_id", "market_id", "category_id", "product_name", 
+		"product_image", "keyword", "description") VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING "product_id"`
+
+	productID := uuid.New()
+	err = db.QueryRow(context.Background(), sql,
+		productID, product.MarketID, product.CategoryID, product.ProductName,
+		product.ProductImage, product.Keyword, product.Description).Scan(&productID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	product.ProductID = productID
+	respondWithJSON(w, 200, product)
 }

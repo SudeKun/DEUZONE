@@ -9,11 +9,11 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/joho/godotenv"
 )
 
-var db *pgx.Conn
+var db *pgxpool.Pool
 
 func main() {
 	err := godotenv.Load(".env")
@@ -33,18 +33,23 @@ func main() {
 
 	connStr := fmt.Sprintf("postgres://%s@%s:%s/%s?sslmode=disable", dbUser, dbHost, dbPort, dbName)
 
-	connConfig, err := pgx.ParseConfig(connStr)
+	// Bağlantı havuzunun yapılandırılması
+	config, err := pgxpool.ParseConfig(connStr)
 	if err != nil {
 		log.Fatal("Error parsing config: ", err)
 	}
 
-	db, err = pgx.ConnectConfig(context.Background(), connConfig)
+	// Bağlantı havuzu boyutunu artırın (MaxConns)
+	config.MaxConns = 20 // Burada 20'yi, ihtiyacınıza göre değiştirebilirsiniz
+
+	// Bağlantı havuzunu oluşturma
+	db, err = pgxpool.ConnectConfig(context.Background(), config)
 	if err != nil {
 		log.Fatal("Unable to connect to database: ", err)
 	} else {
 		log.Println("Successfully connected to the database!")
 	}
-
+	defer db.Close()
 	router := chi.NewRouter()
 
 	router.Use(cors.Handler(cors.Options{
@@ -75,7 +80,7 @@ func main() {
 	APIRouter.Delete("/markets/{id}", deleteMarket)               // Kullanıcıyı sil
 	APIRouter.Post("/login", approveLogin)                        // Kullanıcı girişini onaylama
 	APIRouter.Post("/logout", logoutUser)                         // Kullanıcı çıkışını gerçekleştirme
-
+	APIRouter.Post("/products", createProduct)                    // Ürün oluşumunu gerçekleştirme
 	router.Mount("/api", APIRouter)
 
 	srv := &http.Server{
