@@ -63,24 +63,87 @@ func main() {
 
 	APIRouter := chi.NewRouter()
 
-	APIRouter.Post("/users", createUser)                          // Yeni kullanıcı oluştur
-	APIRouter.Get("/users", getUsers)                             // Tüm kullanıcıları listele
-	APIRouter.Get("/users/{username}", getUserByUsername)         // Kullanıcıyı Username'e göre getir
-	APIRouter.Put("/users/{username}", updateUser)                // Kullanıcıyı güncelle
-	APIRouter.Delete("/users/{username}", deleteUser)             // Kullanıcıyı sil
+	APIRouter.Post("/users", createUser)                  // Yeni kullanıcı oluştur
+	APIRouter.Get("/users", getUsers)                     // Tüm kullanıcıları listele
+	APIRouter.Get("/users/{username}", getUserByUsername) // Kullanıcıyı Username'e göre getir
+	APIRouter.Put("/users/{username}", updateUser)        // Kullanıcıyı güncelle
+	APIRouter.Delete("/users/{username}", deleteUser)     // Kullanıcıyı sil
+
 	APIRouter.Post("/customers", createCustomer)                  // Yeni kullanıcı oluştur
 	APIRouter.Get("/customers", getCustomers)                     // Tüm kullanıcıları listele
 	APIRouter.Get("/customers/{username}", getCustomerByUsername) // Kullanıcıyı Username'e göre getir
 	APIRouter.Put("/customers/{username}", updateCustomer)        // Kullanıcıyı güncelle
 	APIRouter.Delete("/customers/{username}", deleteCustomer)     // Kullanıcıyı sil
-	APIRouter.Post("/markets", createMarket)                      // Yeni kullanıcı oluştur
-	APIRouter.Get("/markets", getMarkets)                         // Tüm kullanıcıları listele
-	APIRouter.Get("/markets/{id}", getMarketByID)                 // Kullanıcıyı Username'e göre getir
-	APIRouter.Put("/markets/{id}", updateMarket)                  // Kullanıcıyı güncelle
-	APIRouter.Delete("/markets/{id}", deleteMarket)               // Kullanıcıyı sil
-	APIRouter.Post("/login", approveLogin)                        // Kullanıcı girişini onaylama
-	APIRouter.Post("/logout", logoutUser)                         // Kullanıcı çıkışını gerçekleştirme
-	APIRouter.Post("/products", createProduct)                    // Ürün oluşumunu gerçekleştirme
+
+	APIRouter.Post("/markets", createMarket)        // Yeni kullanıcı oluştur
+	APIRouter.Get("/markets", getMarkets)           // Tüm kullanıcıları listele
+	APIRouter.Get("/markets/{id}", getMarketByID)   // Kullanıcıyı Username'e göre getir
+	APIRouter.Put("/markets/{id}", updateMarket)    // Kullanıcıyı güncelle
+	APIRouter.Delete("/markets/{id}", deleteMarket) // Kullanıcıyı sil
+
+	APIRouter.Post("/login", approveLogin) // Kullanıcı girişini onaylama
+	APIRouter.Post("/logout", logoutUser)  // Kullanıcı çıkışını gerçekleştirme
+
+	APIRouter.Post("/products", createProduct)
+	APIRouter.Get("/products", getProducts)
+	APIRouter.Post("/products/{id}", getProductByID)
+	APIRouter.Put("/products/{id}", updateProduct)
+	APIRouter.Delete("/products/{id}", deleteProduct)
+
+	APIRouter.Post("/carts", createCart)        // Yeni sepet oluştur
+	APIRouter.Get("/carts", getAllCarts)        // Tüm sepetleri listele
+	APIRouter.Get("/carts/{id}", getCartByID)   // Sepeti ID ile getir
+	APIRouter.Put("/carts/{id}", updateCart)    // Sepeti güncelle
+	APIRouter.Delete("/carts/{id}", deleteCart) // Sepeti sil
+
+	APIRouter.Post("/orders", createOrder)        // Yeni sipariş oluştur
+	APIRouter.Get("/orders", getAllOrders)        // Tüm siparişleri listele
+	APIRouter.Get("/orders/{id}", getOrderByID)   // Siparişi ID ile getir
+	APIRouter.Put("/orders/{id}", updateOrder)    // Siparişi güncelle
+	APIRouter.Delete("/orders/{id}", deleteOrder) // Siparişi sil
+
+	APIRouter.Post("/prices", createPrice)        // Yeni fiyat oluştur
+	APIRouter.Get("/prices", getPrices)           // Tüm fiyatları listele
+	APIRouter.Get("/prices/{id}", getPriceByID)   // Fiyatı ID ile getir
+	APIRouter.Put("/prices/{id}", updatePrice)    // Fiyatı güncelle
+	APIRouter.Delete("/prices/{id}", deletePrice) // Fiyatı sil
+
+	APIRouter.Post("/categories", createCategory)        // Yeni kategori oluştur
+	APIRouter.Get("/categories", getCategories)          // Tüm kategorileri listele
+	APIRouter.Get("/categories/{id}", getCategoryByID)   // Kategoriyi ID ile getir
+	APIRouter.Put("/categories/{id}", updateCategory)    // Kategoriyi güncelle
+	APIRouter.Delete("/categories/{id}", deleteCategory) // Kategoriyi sil
+
+	APIRouter.Post("/colors", createColor)        // Yeni renk oluştur
+	APIRouter.Get("/colors", getColors)           // Tüm renkleri listele
+	APIRouter.Get("/colors/{id}", getColorByID)   // Rengi ID ile getir
+	APIRouter.Put("/colors/{id}", updateColor)    // Rengi güncelle
+	APIRouter.Delete("/colors/{id}", deleteColor) // Rengi sil
+
+	APIRouter.Post("/cartitems", createCartItem)        // Yeni sepet öğesi oluştur
+	APIRouter.Get("/cartitems", getCartItems)           // Tüm sepet öğelerini listele
+	APIRouter.Get("/cartitems/{id}", getCartItemByID)   // Sepet öğesini ID ile getir
+	APIRouter.Put("/cartitems/{id}", updateCartItem)    // Sepet öğesini güncelle
+	APIRouter.Delete("/cartitems/{id}", deleteCartItem) // Sepet öğesini sil
+
+	APIRouter.Post("/orderitems", createOrderItem)        // Yeni sipariş öğesi oluştur
+	APIRouter.Get("/orderitems", getOrderItems)           // Tüm sipariş öğelerini listele
+	APIRouter.Get("/orderitems/{id}", getOrderItemByID)   // Sipariş öğesini ID ile getir
+	APIRouter.Put("/orderitems/{id}", updateOrderItem)    // Sipariş öğesini güncelle
+	APIRouter.Delete("/orderitems/{id}", deleteOrderItem) // Sipariş öğesini sil
+
+	APIRouter.Post("/marketcomments", createMarketComment)        // Yeni yorum oluştur
+	APIRouter.Get("/marketcomments", getMarketComments)           // Tüm yorumları listele
+	APIRouter.Get("/marketcomments/{id}", getMarketCommentByID)   // Yorum ID ile getir
+	APIRouter.Put("/marketcomments/{id}", updateMarketComment)    // Yorum güncelle
+	APIRouter.Delete("/marketcomments/{id}", deleteMarketComment) // Yorum sil
+
+	APIRouter.Post("/productcomments", createProductComment)        // Yeni yorum oluştur
+	APIRouter.Get("/productcomments", getProductComments)           // Tüm yorumları listele
+	APIRouter.Get("/productcomments/{id}", getProductCommentByID)   // Yorum ID ile getir
+	APIRouter.Put("/productcomments/{id}", updateProductComment)    // Yorum güncelle
+	APIRouter.Delete("/productcomments/{id}", deleteProductComment) // Yorum sil
+
 	router.Mount("/api", APIRouter)
 
 	srv := &http.Server{
