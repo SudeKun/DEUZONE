@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { FaPlus, FaMinus } from "react-icons/fa6"
 import { FaRegTrashAlt } from "react-icons/fa"
 
@@ -26,8 +26,12 @@ const CartItem: React.FC<CartItemProps> = ({ Item }) => {
             setQuantity(quantity - 1);
     }
 
+    useEffect(() => {
+        
+    }, [quantity])
+
     return (
-        <div className='w-4/5 h-40 flex flex-row border-2 rounded-lg'>
+        <div className='w-full h-40 flex flex-row border-2 rounded-lg'>
             <div className='h-full w-1/5 aspect-[1/1] flex justify-center items-center'>
                 <img className='object-cover w-full h-full' src={Item.image} alt={Item.name} />
             </div>

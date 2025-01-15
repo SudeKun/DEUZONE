@@ -3,12 +3,19 @@ import React from 'react'
 import SearchBar from './SearchBar';
 import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 
 
 const Header = () => {
 
   const { isAuthenticated, user, logout } = useAuth();
+  const router = useRouter();
+
+  const handleClickProfile = () => {
+    router.push(`/profile/${user?.userid}`);
+  }
 
   return (
     <div className='relative h-[150px]'>
@@ -19,9 +26,7 @@ const Header = () => {
           {
             isAuthenticated ? (
               <>
-              <Link href='/profile'>
-                  <button className='bg-white w-[150px] h-[40px] rounded-md text-textColor'>Welcome, {user?.name}</button>
-                </Link>
+                <button onClick={handleClickProfile} className='bg-white w-[150px] h-[40px] rounded-md text-textColor'>Welcome, {user?.name}</button>
                 <Link href='/cart'>
                   <button className='bg-white w-[150px] h-[40px] rounded-full text-textColor'>Cart</button>
                 </Link>

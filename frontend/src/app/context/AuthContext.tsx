@@ -2,6 +2,7 @@
 import React, { createContext, useState, useContext, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import Users from "../lib/users/Users";
+import axios from "axios";
 
 
 interface User {
@@ -29,20 +30,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const login = (email: string, password: string) => {
 
-        const user = Users.find(u => u.email === email && u.password === password);
+        const theuser = Users.find(u => u.email === email && u.password === password);
 
-        if (user) {
-            setUser(user);
+        if (theuser){
             setIsAuthenticated(true);
+            setUser(theuser);
+            localStorage.setItem("user", JSON.stringify(theuser));
+            localStorage.setItem("isAuthenticated", "true");
             router.push("/");
         }
-        else
-            alert("User cannot found!");
+        else {
+            alert("User Cannot Found!");
+        }
+            
     };
 
     const logout = () => {
         setUser(null);
         setIsAuthenticated(false);
+        localStorage.removeItem("user");
+        localStorage.removeItem("isAuthenticated");
         router.push("/");
     };
 

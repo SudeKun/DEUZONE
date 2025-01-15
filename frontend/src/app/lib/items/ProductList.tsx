@@ -1,3 +1,5 @@
+import img from '@/app/lib/images/Samsung_Galaxy_A70_2.jpeg';
+
 export interface Product {
     product_id: string,
     market_id: string,
@@ -15,7 +17,7 @@ export interface Product {
 
 
 
-const products = [
+var products = [
     {
         product_id: "1",
         market_id: "1",
@@ -27,9 +29,9 @@ const products = [
         review_count: 120,
         price: 5000,
         images: [
-            "https://example.com/a70_1.jpg",
-            "https://example.com/a70_2.jpg",
-            "https://example.com/a70_3.jpg"
+            "@/src/app/lib/images/Samsung_Galaxy_A70_1.jpeg",
+            "@/src(app/lib/images/Samsung_Galaxy_A70_2.jpeg",
+            "@/src/app/lib/images/Samsung_Galaxy_A70_3.jpeg"
         ],
         features: [
             "6.7-inch display",

@@ -6,18 +6,8 @@ import products from '@/app/lib/items/ProductList';
 
 const ProductPage = () => {
     const params = useParams(); 
-    const id = params?.id;  // TypeScript için tip belirtildi
+    const id = params?.id;  
     const product = products.find((p) => p.product_id === id);
-
-    /*
-    useEffect(() => {
-        if (id) {
-            fetch(`/api/products/${id}`)
-                .then((res) => res.json())
-                .then((data) => setProduct(data));
-        }
-    }, [id]);
-    */
 
 
     if (!product) return <p>Loading...</p>;
@@ -34,7 +24,7 @@ const ProductPage = () => {
                     <h1 className="text-2xl font-bold">{product.name}</h1>
                     <p>{product.review_count} reviews - {product.rating}/5</p>
                     <p className="text-xl mt-2">Price: ${product.price}</p>
-                    <button className="bg-blue-500 text-white px-4 py-2 mt-4">Add to Cart</button>
+                    <button className="bg-primary text-textColor px-4 py-2 mt-4">Add to Cart</button>
                 </div>
             </div>
 
